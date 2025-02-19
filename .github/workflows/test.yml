@@ -1,0 +1,46 @@
+name: Test AI Security Scanner
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  security_scan_test:
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write  # 允許上傳 SARIF
+    steps:
+      - name: 檢出代碼
+        uses: actions/checkout@v3
+
+      - name: 測試 GitHub Actions（使用 Security Scanner）
+        uses: scottman625/my-security-scanner-action@v1
+        with:
+          open_ai_key: ${{ secrets.OPEN_AI_KEY }}
+          target_branch: "develop"
+
+      - name: 確保 SARIF 報告已生成
+        run: |
+          if [ ! -s security_report.sarif ]; then
+            echo "❌ Error: SARIF 檔案未生成" && exit 1
+          else
+            echo "✅ SARIF 報告已成功生成！"
+          fi
+
+      - name: 讀取 SARIF 報告（檢查是否包含掃描結果）
+        run: cat security_report.sarif
+
+      - name: 上傳 SARIF 報告作為 Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-report
+          path: security_report.sarif
+
+      - name: 上傳至 GitHub Security Alerts
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: ./security_report.sarif
