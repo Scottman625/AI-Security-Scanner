@@ -25,16 +25,17 @@ runs:
         git fetch origin ${{ inputs.target_branch }}
         git checkout ${{ inputs.target_branch }}
         git log -1
-        # 檢查提交數量
         if [ $(git rev-list --count HEAD) -gt 1 ]; then
-          # 多個提交時，檢查最新提交與第二新的提交之間的變更
           git diff -p HEAD~1 > changes.diff
         else
-          # 只有一個提交時，檢查整個專案
-          git diff HEAD > changes.diff
+          git show HEAD > changes.diff
         fi
-        ls -lah changes.diff  # 確保 `changes.diff` 存在
-        cat changes.diff  # 顯示變更內容
+        ls -lah changes.diff
+        cat changes.diff
+        if [ ! -s changes.diff ]; then
+          echo "❌ 未偵測到代碼變更，或 git diff 失敗"
+          exit 1
+        fi
 
     - name: 確保 `security_report.sarif` 存在
       shell: bash
