@@ -15,7 +15,7 @@ jobs:
 
     steps:
       - name: 使用 AI Security Scanner 進行安全掃描
-        uses: scottman625/my-security-scanner-action@v1
+        uses: scottman625/security-scanner-action@v1
         with:
           open_ai_key: ${{ secrets.OPEN_AI_KEY }}  # 用戶提供自己的 OpenAI API Key
           target_branch: "develop"
