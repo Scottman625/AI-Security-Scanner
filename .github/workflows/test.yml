@@ -18,7 +18,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: 測試 GitHub Actions（使用 Security Scanner）
-        uses: scottman625/my-security-scanner-action@v1
+        uses: scottman625/security-scanner-action@v1
         with:
           open_ai_key: ${{ secrets.OPEN_AI_KEY }}
           target_branch: "develop"
