@@ -1,0 +1,23 @@
+name: "AI Security Scanner"
+author: "scottman625"
+description: "使用 GPT-4 自動檢測代碼中的安全漏洞，支援 GitHub Actions"
+
+branding:
+  icon: "shield"
+  color: "blue"
+
+inputs:
+  open_ai_key:
+    description: "你的 OpenAI API 金鑰"
+    required: true
+  target_branch:
+    description: "要檢測的 Git 分支"
+    required: false
+    default: "master"
+
+runs:
+  using: "docker"
+  image: "docker://scottman625/my-security-scanner:latest"
+  args:
+    - "--branch"
+    - "${{ inputs.target_branch }}"
