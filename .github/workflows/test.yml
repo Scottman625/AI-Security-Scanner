@@ -21,7 +21,7 @@ jobs:
         uses: scottman625/security-scanner-action@v1
         with:
           open_ai_key: ${{ secrets.OPEN_AI_KEY }}
-          target_branch: "develop"
+          target_branch: "master"
 
       - name: 確保 SARIF 報告已生成
         run: |
