@@ -22,7 +22,7 @@ runs:
       shell: bash
       run: |
         git fetch origin ${{ inputs.target_branch }}
-        git diff -p origin/${{ inputs.target_branch }} > changes.diff
+        git diff -p HEAD~1 > changes.diff
         ls -lah changes.diff  # 確保 `changes.diff` 存在
         cat changes.diff  # 顯示變更內容
 
