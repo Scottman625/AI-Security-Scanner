@@ -1,6 +1,6 @@
 name: "AI Security Scanner"
 author: "scottman625"
-description: "使用 GPT-4 自動檢測代碼中的安全漏洞，支援 GitHub Actions"
+description: "使用 GPT-4 自動檢測代碼中的安全漏洞，並自動上傳 SARIF 報告"
 
 branding:
   icon: "shield"
@@ -16,8 +16,51 @@ inputs:
     default: "master"
 
 runs:
-  using: "docker"
-  image: "docker://scottman625/my-security-scanner:latest"
-  args:
-    - "--branch"
-    - "${{ inputs.target_branch }}"
+  using: "composite"
+  steps:
+    - name: 檢查並獲取最新變更
+      shell: bash
+      run: |
+        git fetch origin ${{ inputs.target_branch }}
+        git diff -p origin/${{ inputs.target_branch }} > changes.diff
+        ls -lah changes.diff  # 確保 `changes.diff` 存在
+        cat changes.diff  # 顯示變更內容
+
+    - name: 確保 `security_report.sarif` 存在
+      shell: bash
+      run: touch security_report.sarif
+
+    - name: 執行 AI Security Scanner
+      shell: bash
+      env:
+        OPEN_AI_KEY: ${{ inputs.open_ai_key }}
+      run: |
+        docker run --rm \
+          -e OPEN_AI_KEY=$OPEN_AI_KEY \
+          -v $(pwd)/changes.diff:/app/changes.diff \
+          -v $(pwd)/security_report.sarif:/app/security_report.sarif \
+          scottman625/my-security-scanner /app/changes.diff
+
+    - name: 確保 SARIF 報告已生成
+      shell: bash
+      run: |
+        if [ ! -s security_report.sarif ]; then
+          echo "❌ Error: SARIF 檔案未生成" && exit 1
+        else
+          echo "✅ SARIF 報告已成功生成！"
+        fi
+
+    - name: 讀取 SARIF 報告（檢查是否包含掃描結果）
+      shell: bash
+      run: cat security_report.sarif
+
+    - name: 上傳 SARIF 報告作為 Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: security-report
+        path: security_report.sarif
+
+    - name: 上傳至 GitHub Security Alerts
+      uses: github/codeql-action/upload-sarif@v3
+      with:
+        sarif_file: ./security_report.sarif

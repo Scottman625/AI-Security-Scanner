@@ -3,10 +3,10 @@ name: Test AI Security Scanner
 on:
   push:
     branches:
-      - master
+      - main
   pull_request:
     branches:
-      - master
+      - main
 
 jobs:
   security_scan_test:
@@ -34,13 +34,3 @@ jobs:
       - name: 讀取 SARIF 報告（檢查是否包含掃描結果）
         run: cat security_report.sarif
 
-      - name: 上傳 SARIF 報告作為 Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: security-report
-          path: security_report.sarif
-
-      - name: 上傳至 GitHub Security Alerts
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: ./security_report.sarif
